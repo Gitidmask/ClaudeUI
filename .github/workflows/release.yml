@@ -2,7 +2,7 @@ name: Build & Release
 
 on:
   push:
-    branches: [main]
+    branches: ['feature/**']
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -33,35 +33,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Determine next version
+      - name: Determine version from branch name
         id: bump
         run: |
-          # Only consider stable tags (no hyphen = no pre-release suffix)
-          LATEST_TAG=$(git tag -l 'v*' --sort=-v:refname | grep -v '-' | head -1)
-          if [ -z "$LATEST_TAG" ]; then
-            NEXT="1.0.0"
-          else
-            # Strip leading 'v'
-            CURRENT="${LATEST_TAG#v}"
-            MAJOR=$(echo "$CURRENT" | cut -d. -f1)
-            MINOR=$(echo "$CURRENT" | cut -d. -f2)
-            PATCH=$(echo "$CURRENT" | cut -d. -f3)
-            NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))"
-          fi
-          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
-          echo "tag=v$NEXT" >> "$GITHUB_OUTPUT"
-          echo "Next version: $NEXT"
+          # Extract branch slug from feature/xxx → xxx
+          BRANCH="${{ github.ref_name }}"
+          SLUG="${BRANCH#feature/}"
+          # Sanitize to semver-compatible prerelease: 0.0.0-<slug>
+          VERSION="0.0.0-${SLUG}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version from branch: $VERSION"
 
       - name: Generate changelog
         id: changelog
         run: |
-          LATEST_TAG=$(git tag -l 'v*' --sort=-v:refname | grep -v '-' | head -1)
-          if [ -z "$LATEST_TAG" ]; then
-            LOG=$(git log --pretty=format:'- %s (%h)' --no-merges)
-          else
-            LOG=$(git log "${LATEST_TAG}..HEAD" --pretty=format:'- %s (%h)' --no-merges)
-          fi
-          # Write to file to preserve newlines, then encode for output
+          LOG=$(git log -20 --pretty=format:'- %s (%h)' --no-merges)
           echo "$LOG" > /tmp/changelog.txt
           {
             echo 'changelog<<CHANGELOG_EOF'
