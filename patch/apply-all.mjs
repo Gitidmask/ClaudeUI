@@ -50,10 +50,6 @@ console.log('\n>>> Syntax check: %s\n', cliPath)
 
 const checkers = [
   {
-    name: 'node --check',
-    run: () => execFileSync('node', ['--check', cliPath], { stdio: 'pipe' })
-  },
-  {
     name: 'bun build',
     run: () =>
       execFileSync('bun', ['build', '--no-bundle', '--outfile', '/dev/null', cliPath], {
@@ -68,6 +64,10 @@ const checkers = [
         ['--bundle=false', cliPath],
         { stdio: 'pipe' }
       )
+  },
+  {
+    name: 'node --check',
+    run: () => execFileSync('node', ['--check', cliPath], { stdio: 'pipe' })
   }
 ]
 
