@@ -22,6 +22,20 @@
   line-height: var(--diff-line-height);
 }
 
+/* ── Light theme diff overrides ─────────────────────────────────────── */
+
+[data-theme="light"] .diff-viewer {
+  --diff-add-bg: #dafbe1;
+  --diff-add-gutter-bg: #c6efce;
+  --diff-add-indicator: #1a7f37;
+  --diff-del-bg: #ffebe9;
+  --diff-del-gutter-bg: #f8d0cd;
+  --diff-del-indicator: #cf222e;
+  --diff-hunk-bg: #ddf4ff;
+  --diff-hunk-text: var(--color-text-muted);
+  --diff-gutter-text: var(--color-text-muted);
+}
+
 /* ── Table layout (StaticDiffTable) ────────────────────────────────── */
 
 .diff-table {
@@ -53,8 +67,11 @@
 .diff-row-add { background: var(--diff-add-bg); }
 .diff-row-del { background: var(--diff-del-bg); }
 
-.diff-row-add .diff-gutter { background: var(--diff-add-gutter-bg); color: rgba(255, 255, 255, 0.8); --gutter-hover-bg: #2f5732; }
-.diff-row-del .diff-gutter { background: var(--diff-del-gutter-bg); color: rgba(255, 255, 255, 0.8); --gutter-hover-bg: #713431; }
+.diff-row-add .diff-gutter { background: var(--diff-add-gutter-bg); color: color-mix(in srgb, var(--diff-add-indicator) 75%, var(--color-text-primary)); --gutter-hover-bg: #2f5732; }
+.diff-row-del .diff-gutter { background: var(--diff-del-gutter-bg); color: color-mix(in srgb, var(--diff-del-indicator) 65%, var(--color-text-primary)); --gutter-hover-bg: #713431; }
+
+[data-theme="light"] .diff-row-add .diff-gutter { color: #1a7f37; --gutter-hover-bg: #b3e6c0; }
+[data-theme="light"] .diff-row-del .diff-gutter { color: #cf222e; --gutter-hover-bg: #f0c0c0; }
 
 /* ── Gutter cells ──────────────────────────────────────────────────── */
 
@@ -134,7 +151,7 @@
   width: calc(var(--diff-gutter-width) * 2);
   min-width: calc(var(--diff-gutter-width) * 2);
   border: none;
-  background: color-mix(in srgb, #6c9eff 10%, var(--diff-hunk-bg));
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--diff-hunk-bg));
   color: var(--color-accent);
   cursor: pointer;
   transition: background 0.12s;
@@ -157,7 +174,7 @@
 }
 
 .diff-gap:hover {
-  background: #182640;
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--diff-hunk-bg));
 }
 
 .diff-gap-text {
@@ -205,8 +222,8 @@
     -45deg,
     transparent,
     transparent 4px,
-    rgba(255, 255, 255, 0.02) 4px,
-    rgba(255, 255, 255, 0.02) 8px
+    color-mix(in srgb, var(--color-text-primary) 3%, transparent) 4px,
+    color-mix(in srgb, var(--color-text-primary) 3%, transparent) 8px
   );
 }
 

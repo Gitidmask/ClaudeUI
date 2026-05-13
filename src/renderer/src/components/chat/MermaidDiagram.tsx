@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react'
 import mermaid from 'mermaid'
 import DOMPurify from 'dompurify'
-import { Highlight, themes } from 'prism-react-renderer'
+import { Highlight } from 'prism-react-renderer'
+import { getCodeTheme } from '../../lib/diff/highlight'
 import { useSessionStore } from '../../stores/session-store'
 import type { ThemeId } from '../../stores/session-store'
 
@@ -321,7 +322,7 @@ function SourceView({ source }: { source: string }): React.JSX.Element {
   return (
     <div className="relative">
       <CopyButton text={source} />
-      <Highlight theme={themes.oneDark} code={trimmed} language="markdown">
+      <Highlight theme={getCodeTheme()} code={trimmed} language="markdown">
         {({ tokens, getLineProps, getTokenProps }) => (
           <pre
             className="text-[11px] font-mono leading-[1.3] rounded-md border border-border overflow-auto"

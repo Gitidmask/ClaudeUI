@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Highlight, themes } from 'prism-react-renderer'
+import { Highlight } from 'prism-react-renderer'
+import { getCodeTheme } from '../../lib/diff/highlight'
 
 export const EXT_TO_LANG: Record<string, string> = {
   ts: 'typescript', tsx: 'tsx', js: 'javascript', jsx: 'jsx', mjs: 'javascript', cjs: 'javascript', mts: 'typescript', cts: 'typescript',
@@ -45,7 +46,7 @@ export function CodeView({ code, filePath }: Props): React.JSX.Element {
   const lang = getLang(filePath)
 
   return (
-    <Highlight theme={themes.oneDark} code={trimmed} language={lang}>
+    <Highlight theme={getCodeTheme()} code={trimmed} language={lang}>
       {({ tokens, getLineProps, getTokenProps }) => (
         <pre
           className="text-[11px] font-mono leading-[1.3] rounded-md border border-border overflow-auto"

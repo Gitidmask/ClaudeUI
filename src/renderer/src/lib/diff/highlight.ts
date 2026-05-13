@@ -26,10 +26,25 @@ export function getLang(filePath?: string): string {
   return EXT_TO_LANG[ext] || 'plaintext'
 }
 
-/** The shared theme for all code highlighting */
-export const codeTheme = themes.oneDark
-
 export { Highlight }
+
+/**
+ * Resolve the current Prism theme from the document's data-theme attribute.
+ * Falls back to oneDark when no theme is set (dark is the default, signaled by
+ * a missing data-theme attribute).
+ */
+export function getCodeTheme(): typeof themes.oneDark {
+  const theme = document.documentElement.dataset.theme
+  return theme === 'light' ? themes.oneLight : themes.oneDark
+}
+
+/**
+ * Returns the code theme in use. Callers that can react to theme changes
+ * should prefer getCodeTheme() to pick up the current value.
+ */
+export function getCodeThemeStatic(): typeof themes.oneDark {
+  return getCodeTheme()
+}
 
 /** Token data for a single syntax token */
 export interface SyntaxToken {
@@ -38,17 +53,23 @@ export interface SyntaxToken {
 }
 
 /**
- * Resolve the color for a token type from the oneDark theme.
- * Caches results for performance.
+ * Resolve the color for a token type from the current theme.
+ * Caches results for performance. Invalidated on theme switch.
  */
 const colorCache = new Map<string, string | undefined>()
+let cachedThemeId: string | undefined
 
 function resolveColor(types: string[]): string | undefined {
+  const currentTheme = document.documentElement.dataset.theme || 'dark'
+  if (cachedThemeId !== currentTheme) {
+    colorCache.clear()
+    cachedThemeId = currentTheme
+  }
   const key = types.join('.')
   if (colorCache.has(key)) return colorCache.get(key)
 
   let color: string | undefined
-  for (const entry of codeTheme.styles) {
+  for (const entry of getCodeTheme().styles) {
     for (const type of types) {
       if (entry.types.includes(type)) {
         color = entry.style.color as string | undefined
