@@ -75,10 +75,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
-            platform: mac
-            zip_name: ClaudeUI-${{ needs.version.outputs.version }}-mac-arm64.zip
-            build_dir: dist/mac-arm64
           - os: windows-latest
             platform: win
             zip_name: ClaudeUI-${{ needs.version.outputs.version }}-win-x64.zip
@@ -155,28 +151,10 @@ jobs:
           bunx electron-vite build
           bunx vite build --config vite.web.config.ts
 
-      - name: Package (macOS)
-        if: matrix.platform == 'mac'
-        run: |
-          bunx electron-builder --mac --dir
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-
-      - name: Ad-hoc sign (macOS)
-        if: matrix.platform == 'mac'
-        run: |
-          codesign --force --deep --sign - "${{ matrix.build_dir }}/ClaudeUI.app"
-
       - name: Package (Windows)
         if: matrix.platform == 'win'
         run: |
           bunx electron-builder --win --dir
-
-      - name: Zip build output (macOS)
-        if: matrix.platform == 'mac'
-        run: |
-          cd "${{ matrix.build_dir }}"
-          zip -r -y "../../${{ matrix.zip_name }}" .
 
       - name: Zip build output (Windows)
         if: matrix.platform == 'win'
