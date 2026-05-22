@@ -4,6 +4,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import { hydrateConfigFromDisk, getRemoteStateSnapshot } from './stores/session-store'
+import './lib/tauri-api'
 
 // Global error handlers — forward uncaught renderer errors to the main process log file
 window.onerror = (message, source, lineno, colno, error): void => {

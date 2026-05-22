@@ -4,6 +4,7 @@ import { resolve } from 'path'
 const sharedAlias = {
   '@renderer': resolve(__dirname, 'src/renderer/src'),
   '@test': resolve(__dirname, 'src/test'),
+  electron: resolve(__dirname, 'src/test/stubs/electron-shim.ts'),
 }
 
 export default defineConfig({
