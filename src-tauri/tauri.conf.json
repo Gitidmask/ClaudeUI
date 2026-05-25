@@ -1,19 +1,15 @@
 {
-  "$schema": "./node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/refs/heads/v2/crates/tauri-utils/schema.json",
+  "productName": "ClaudeUI",
+  "version": "1.0.0",
+  "identifier": "com.claudeui.app",
   "build": {
     "beforeDevCommand": "npm run ensure-cli && vite",
     "beforeBuildCommand": "npm run ensure-cli && vite build",
     "devUrl": "http://localhost:5173",
-    "distDir": "./dist"
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "ClaudeUI",
-    "version": "1.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true
-    },
+  "app": {
     "windows": [
       {
         "title": "ClaudeUI",
@@ -21,12 +17,16 @@
         "height": 750,
         "minWidth": 600,
         "minHeight": 400,
-        "titleBarStyle": "hiddenInset",
-        "transparent": true
+        "resizable": true,
+        "fullscreen": false
       }
     ],
     "security": {
       "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' ws://localhost:* http://localhost:*"
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all"
   }
 }
