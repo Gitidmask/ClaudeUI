@@ -15,3 +15,10 @@ bin/
 # bumps in package.json.
 /vendor/claude-cli/
 /.cache/
+
+# Tauri build artifacts
+src-tauri/target/
+src-tauri/Cargo.lock
+
+# Build logs
+logs_*/

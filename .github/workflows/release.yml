@@ -83,11 +83,9 @@ jobs:
           (Get-Content $cargoPath) -replace '^version = ".*"', "version = `"$version`"" | Set-Content $cargoPath
           Write-Host "Updated Cargo.toml version to: $version"
 
-          # Update tauri.conf.json (Tauri v2)
+          # Update tauri.conf.json (Tauri v2) using sed-like replacement to preserve JSON structure
           $tauriPath = "src-tauri\tauri.conf.json"
-          $tauri = Get-Content $tauriPath -Raw | ConvertFrom-Json
-          $tauri.version = $version
-          $tauri | ConvertTo-Json -Depth 10 | Set-Content $tauriPath
+          (Get-Content $tauriPath -Raw) -replace '"version":\s*"[^"]+"', "`"version`": `"$version`"" | Set-Content $tauriPath -NoNewline
           Write-Host "Updated tauri.conf.json version to: $version"
 
       - name: Exclude workspace from Windows Defender
@@ -130,8 +128,13 @@ jobs:
       - name: Build frontend
         run: bun run build:web
 
-      - name: Build Tauri app
+      - name: Build Tauri app (with NSIS bundle)
         run: bun run tauri build --target x86_64-pc-windows-msvc
+        env:
+          CI: true
+
+      - name: Build portable version (no bundle)
+        run: bun run tauri build --target x86_64-pc-windows-msvc --no-bundle
         env:
           CI: true
 
@@ -144,9 +147,10 @@ jobs:
           Get-ChildItem -Path src-tauri\target\x86_64-pc-windows-msvc\release\bundle\nsis -Filter *.exe -ErrorAction SilentlyContinue |
             ForEach-Object { Copy-Item $_.FullName dist\windows-x86_64\ }
           
-          # 收集便携版（绿色版）
-          Get-ChildItem -Path src-tauri\target\x86_64-pc-windows-msvc\release\bundle\portable -Filter *.zip -ErrorAction SilentlyContinue |
-            ForEach-Object { Copy-Item $_.FullName dist\windows-x86_64\ }
+          # 创建便携版 ZIP 包
+          $portableDir = "src-tauri\target\x86_64-pc-windows-msvc\release"
+          $portableZip = "dist\windows-x86_64\ClaudeUI-portable.zip"
+          Compress-Archive -Path "$portableDir\ClaudeUI.exe", "$portableDir\ClaudeUI.dll" -DestinationPath $portableZip -Force
 
           Write-Host "Artifacts:"
           Get-ChildItem dist\windows-x86_64
