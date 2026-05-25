@@ -57,33 +57,57 @@ jobs:
 
   build:
     needs: version
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            platform: win
-            zip_name: ClaudeUI-${{ needs.version.outputs.version }}-win-x64.zip
-            build_dir: target/release/bundle/msi
-
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Extract branch name
+        shell: pwsh
+        run: |
+          $branchName = "${{ github.ref_name }}"
+          $safeName = $branchName.Replace('/', '-')
+          Write-Host "Branch name: $branchName"
+          Write-Host "Safe name: $safeName"
+          "BRANCH_NAME=$branchName" >> $env:GITHUB_ENV
+          "SAFE_BRANCH_NAME=$safeName" >> $env:GITHUB_ENV
+
+      - name: Set version
+        shell: pwsh
+        run: |
+          $version = "${{ needs.version.outputs.version }}"
+          Write-Host "Version: $version"
+
+          # Update Cargo.toml
+          $cargoPath = "src-tauri\Cargo.toml"
+          (Get-Content $cargoPath) -replace '^version = ".*"', "version = `"$version`"" | Set-Content $cargoPath
+          Write-Host "Updated Cargo.toml version to: $version"
+
+          # Update tauri.conf.json
+          $tauriPath = "src-tauri\tauri.conf.json"
+          $tauri = Get-Content $tauriPath -Raw | ConvertFrom-Json
+          $tauri.version = $version
+          $tauri | ConvertTo-Json -Depth 10 | Set-Content $tauriPath
+          Write-Host "Updated tauri.conf.json version to: $version"
+
       - name: Exclude workspace from Windows Defender
-        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           Add-MpPreference -ExclusionPath "${{ github.workspace }}"
           Add-MpPreference -ExclusionPath "$env:USERPROFILE\.bun"
-          Add-MpPreference -ExclusionProcess "bun.exe"
-          Add-MpPreference -ExclusionProcess "node.exe"
 
-      - uses: actions/setup-node@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          node-version: 20
+          targets: x86_64-pc-windows-msvc
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Cache bun install
         uses: actions/cache@v4
@@ -92,20 +116,6 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-bun-
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Rust dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-rust-${{ hashFiles('src-tauri/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-rust-
 
       - name: Install dependencies
         run: bun install
@@ -121,21 +131,25 @@ jobs:
         run: bun run build:web
 
       - name: Build Tauri app
-        run: npx tauri build
+        run: bun run tauri build --target x86_64-pc-windows-msvc
+        env:
+          CI: true
 
-      - name: Zip build output (Windows)
-        if: matrix.platform == 'win'
+      - name: Collect artifacts
         shell: pwsh
         run: |
-          Get-ChildItem -Path "${{ matrix.build_dir }}" -Filter "*.msi" | ForEach-Object {
-            Compress-Archive -Path $_.FullName -DestinationPath "${{ matrix.zip_name }}"
-          }
+          New-Item -ItemType Directory -Force -Path dist\windows-x86_64 | Out-Null
+          Get-ChildItem -Path src-tauri\target\x86_64-pc-windows-msvc\release\bundle\nsis -Filter *.exe -ErrorAction SilentlyContinue |
+            ForEach-Object { Copy-Item $_.FullName dist\windows-x86_64\ }
 
-      - name: Upload artifact
+          Write-Host "Artifacts:"
+          Get-ChildItem dist\windows-x86_64
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.zip_name }}
-          path: ${{ matrix.zip_name }}
+          name: windows-x86_64-${{ env.SAFE_BRANCH_NAME }}
+          path: dist/windows-x86_64/*
 
   release:
     needs: [version, build]
