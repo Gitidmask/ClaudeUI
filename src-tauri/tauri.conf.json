@@ -26,6 +26,12 @@
   },
   "bundle": {
     "active": true,
-    "targets": "nsis"
+    "targets": "nsis",
+    "resources": [
+      {
+        "path": "../vendor/claude-cli",
+        "target": "claude-cli"
+      }
+    ]
   }
 }
