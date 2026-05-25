@@ -83,10 +83,10 @@ jobs:
           (Get-Content $cargoPath) -replace '^version = ".*"', "version = `"$version`"" | Set-Content $cargoPath
           Write-Host "Updated Cargo.toml version to: $version"
 
-          # Update tauri.config.json (Tauri v2) - file is in root
+          # Update tauri.config.json (Tauri v2) - version is under package
           $tauriPath = "tauri.config.json"
           $tauri = Get-Content $tauriPath -Raw | ConvertFrom-Json
-          $tauri.version = $version
+          $tauri.package.version = $version
           $tauri | ConvertTo-Json -Depth 10 | Set-Content $tauriPath
           Write-Host "Updated tauri.config.json version to: $version"
 
