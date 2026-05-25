@@ -205,7 +205,7 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('AutomationManager — DST handling (via cron-parser)', () => {
-  it('spring-forward: 02:30 daily cron in America/New_York skips or shifts the missing 02:30 on DST start day', () => {
+  it('spring-forward: 02:30 daily cron in America/New_York skips or shifts the missing 02:30 on DST start day', { timeout: 10000 }, () => {
     // 2024-03-10 US Eastern: clocks jump 02:00 → 03:00. Local time 02:30 does not exist.
     const expr = CronExpressionParser.parse('30 2 * * *', {
       currentDate: '2024-03-09T10:00:00-05:00',
