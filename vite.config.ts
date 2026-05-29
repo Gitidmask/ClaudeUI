@@ -12,6 +12,7 @@ export default defineConfig({
   },
   plugins: [react(), tailwindcss(), tauri()],
   build: {
+    outDir: 'dist',
     rollupOptions: {
       input: {
         index: resolve('src/renderer/index.html'),
