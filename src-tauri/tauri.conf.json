@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "identifier": "com.claudeui.app",
   "build": {
-    "beforeDevCommand": "vite",
-    "beforeBuildCommand": "vite build",
+    "beforeDevCommand": "bun run vite",
+    "beforeBuildCommand": "bun run vite build",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
   },
