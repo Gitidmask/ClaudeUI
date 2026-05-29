@@ -28,10 +28,7 @@
     "active": true,
     "targets": "nsis",
     "resources": [
-      {
-        "path": "../vendor/claude-cli",
-        "target": "claude-cli"
-      }
+      "../vendor/claude-cli"
     ]
   }
 }
