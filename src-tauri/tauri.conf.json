@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "identifier": "com.claudeui.app",
   "build": {
-    "beforeDevCommand": "npm run ensure-cli && vite",
+    "beforeDevCommand": "vite",
+    "beforeBuildCommand": "vite build",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
   },
